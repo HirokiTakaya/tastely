@@ -5,6 +5,7 @@ import Footer from '../files/footer/Footer';
 
 import UserBar from '../homepage/userheader';
 import axios from 'axios';
+import { BACKEND_API } from '../../config';
 
 import {
   AreaChart,
@@ -19,7 +20,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const SUBSCRIPTION_API_URL = 'http://localhost:8080/showcustomersubscribeplan';
+const SUBSCRIPTION_API_URL = `${BACKEND_API}/showcustomersubscribeplan`;
 
 const Ownerpage = (props) => {
   // const navigate = useNavigate();
