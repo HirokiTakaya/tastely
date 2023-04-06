@@ -168,6 +168,11 @@ html {
     order: 1;
   }
 
+  .landing-image img {
+    height: 400px;
+    width: auto;
+  }
+
   .landing-logo img {
     height: auto;
     margin-top: 0px;
@@ -176,7 +181,11 @@ html {
 
   .login-image {
     order: 2;
-    width: 350px;
+    /* width: 350px; */
+  }
+
+  .login-image img {
+    height: 400px;
   }
 
   .side-menu-bar {
