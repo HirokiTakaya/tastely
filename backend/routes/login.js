@@ -1,32 +1,35 @@
 const router = require('express').Router();
+const bcrypt = require('bcrypt');
+const userModel = require('../models/users'); 
+const { generateToken } = require('../auth'); 
 
-//import model
-const userModel = require('../models/users');
 
-//create post route
-router.post ("/login",  (req,res) => {
-    const {email, password} = req.body
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
 
-    userModel.findOne({email: email}, (err, user) => {
-        if(user){
-           if(password === user.password) {
-            res.status(200).json({message: "Login Successfull", user: user})
-           } else {
-            res.send({message: "Password did not matched"})
-           }
+    try {
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(401).send({ message: "User not registered" });
         }
-        else {
-           res.send({message: "User not registered"})
+
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).send({ message: "Password did not match" });
         }
-    })
-    
+
+        
+        const token = generateToken(user);
+        res.status(200).json({ message: "Login successful", token });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
-//create get route
 
-// router.get("/", (req, res) => {
-//    res.json('user info')
-    
-// })
+router.post("/test", (req, res) => {
+  res.send("Test route is working");
+});
 
 module.exports = router;

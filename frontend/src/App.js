@@ -1,4 +1,4 @@
-// import logo from './logo.svg';
+
 import { useState, useEffect } from 'react';
 // import { Link, Outlet} from 'react-router-dom'
 import Homepage from './components/homepage/homepage';
@@ -16,6 +16,8 @@ import LandingPage from './components/homepage/landingpage';
 import UserBar from './components/homepage/userheader';
 // import { Footer } from './components/files'
 
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 // import Header from './components/homepage/header';
 
 import './App.css';
@@ -29,10 +31,25 @@ import ViewMealPage from './components/meal/ViewMealPage';
 //import Footer from './components/files/footer/Footer';
 //import KitchenHeader from './components/homepage/kitchenheader';
 
-const App = (props) => {
-  const [isActive, setIsActive] = useState(false);
+
+
+const App = () => {
   const [loginUser, setLoginUser] = useState({});
   const [kitchenOwner, setKitchenOwner] = useState();
+  const [isActive, setIsActive] = useState(false);
+
+  
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setLoginUser(user);
+    } else {
+      setLoginUser(null);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -40,6 +57,8 @@ const App = (props) => {
       setLoginUser(user);
     }
   }, []);
+
+
 
   return (
     <div className="App">

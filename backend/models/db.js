@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 
 // const dbURI = 'mongodb+srv://dionysus:Windows10*@cluster0.es7590t.mongodb.net/?retryWrites=true&w=majority'
 
-const dbURI = `mongodb+srv://karansingh1120:X1Dc5dGBebuEG9U0@cluster0.cdgdg.mongodb.net/tastelyusers?retryWrites=true&w=majority`;
+const dbURI = 'mongodb+srv://hiroki:jiujitsu1love@cluster0.wv4ehnh.mongodb.net/?retryWrites=true&w=majority'
+
+
 
 mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true});
 

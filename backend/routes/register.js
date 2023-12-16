@@ -1,48 +1,39 @@
 const router = require('express').Router();
+const bcrypt = require('bcrypt');
+const userModel = require('../models/users'); 
 
-//import model
-const userModel = require('../models/users');
+router.post("/register", async (req, res) => {
+    const { name, email, password, usertype, address, postalcode, contact, imageurl } = req.body;
 
-//create post route
-router.post ("/register",  (req,res) => {
-    const {name, email, password, usertype, address, postalcode, contact, imageurl} = req.body;
-
-    userModel.findOne({email: email}, (err, user) => {
-        if(user){
-            res.send({message: "User already registered"})
-        }
-        else {
-            try {
-                const newUser = userModel({
-                    name,
-                    email,
-                    password,
-                    usertype,
-                    address,
-                    postalcode,
-                    contact,
-                    imageurl
-                });
-            
-                const saveItem = newUser.save();
-                res.status(200).json(saveItem);
-            
-              } catch (err) {
-                res.status(500).json(err.message);
-              }
-        }
-    })
-    
-});
-
-//craete get route
-router.get('/allkitchens', async (req, res) => {
     try {
-      const allKitchenOwners = await userModel.find({});
-      res.status(200).json(allKitchenOwners);
+        
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            return res.status(400).send({ message: "User already registered" });
+        }
+
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        
+        const newUser = new userModel({
+            name,
+            email,
+            password: hashedPassword,
+            usertype,
+            address,
+            postalcode,
+            contact,
+            imageurl
+        });
+
+       
+        await newUser.save();
+
+        res.status(200).json({ message: "User successfully registered" });
     } catch (err) {
-      res.status(500).json(err.message);
+        res.status(500).json({ message: err.message });
     }
-  });
+});
 
 module.exports = router;

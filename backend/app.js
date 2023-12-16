@@ -1,42 +1,52 @@
-
 const express = require("express");
-const path = require('path');
 const cors = require('cors');
-const app = express()
-app.use(express.json())
+const app = express();
+const admin = require('firebase-admin');
 
-app.use(express.static('public'));
+
+const serviceAccount = require('./auth-5793f-firebase-adminsdk-yi5ey-f7e097fbbe.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+
+const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split('Bearer ')[1];
+  if (!token) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    res.status(401).send('Unauthorized');
+  }
+};
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
-const bodyParser = require("body-parser");
-const router = require('./routes');
-
 app.use(cors());
 
 require('./models/db');
 
-app.use("/api/v1", router);
 
-app.set('port', process.env.PORT || 8080);
+const router = express.Router();
 
-let server = app.listen(app.settings.port, () => console.log('listening on ', app.settings.port));
-
-// app.get("/*",(req,res) => {
-//     res.status(404).json({error:"Page not found for now"});
-// });
-
-//Routes
-const RegisterRoute = require('./routes/register');
-app.use('/', RegisterRoute);
 
 const LoginRoute = require('./routes/login');
-app.use('/', LoginRoute);
+router.use('/login', LoginRoute);
+
+const RegisterRoute = require('./routes/register');
+router.use('/register', RegisterRoute);
 
 const CreatePlanRoute = require('./routes/createplan');
-app.use('/', CreatePlanRoute);
+router.use('/createplan', authMiddleware, CreatePlanRoute); 
 
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.resolve(__dirname, './public', 'index.html'));
-//   });
+app.use("/api/v1", router);
+
+
+app.set('port', process.env.PORT || 8080);
+app.listen(app.get('port'), () => console.log('listening on ', app.get('port')));

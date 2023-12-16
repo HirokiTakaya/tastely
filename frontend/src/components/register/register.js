@@ -1,24 +1,26 @@
-import React, { useState } from "react"
-import axios from "axios"
-import { Link } from 'react-router-dom'
+import React, { useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from 'react-router-dom';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import landing from './landing.JPG';
-import "./register.css"
+import "./register.css";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { BACKEND_API } from "../../config";
 
 const Register = () => {
-
+    
     const firebaseConfig = {
-        apiKey: "AIzaSyDeWXGiRoc2XjY_mEg-Xt0HsuIOBssJOIU",
-        authDomain: "tastely-5fd54.firebaseapp.com",
-        projectId: "tastely-5fd54",
-        storageBucket: "tastely-5fd54.appspot.com",
-        messagingSenderId: "259493791650",
-        appId: "1:259493791650:web:ec39e0d2a15cb215c9d4fb"
+         apiKey: "AIzaSyAMi3lLeW6hCqEMHulmafB_ctjVPbT5IKU",
+  authDomain: "auth-5793f.firebaseapp.com",
+  projectId: "auth-5793f",
+  storageBucket: "auth-5793f.appspot.com",
+  messagingSenderId: "464378953514",
+  appId: "1:464378953514:web:510d66ef524b2e59892853",
+  measurementId: "G-5G2HYEQCXT"
     };
 
-    // Initialize Firebase
+    
     const app = initializeApp(firebaseConfig);
     const storage = getStorage();
     let uploadedImage;
@@ -32,56 +34,54 @@ const Register = () => {
         address: "",
         postalcode: "",
         contact: ""
-    })
+    });
+
+    const navigate = useNavigate();
 
     const handleChange = e => {
-        const { name, value } = e.target
+        const { name, value } = e.target;
         setUser({
             ...user,
             [name]: value
-        })
-    }
-
-    const handleImageChange = (e) => {
-        uploadedImage = e.target.files[0]
+        });
     };
 
-    const showData = () => {
-        console.log('Form:', user)
-        console.log('URL', process.env.REACT_APP_URL)
-    }
+    const handleImageChange = e => {
+        uploadedImage = e.target.files[0];
+    };
 
     const register = () => {
-        showData();
-
         let storageRef = ref(storage, `Users/${uploadedImage.name}`);
 
         uploadBytes(storageRef, uploadedImage).then((snapshot) => {
-            console.log('Uploaded image!');
-
             getDownloadURL(storageRef)
                 .then((url) => {
                     user.imageurl = url;
-                    const { name, email, password, reEnterPassword, address, postalcode, contact } = user
+
+                    const { name, email, password, reEnterPassword, address, postalcode, contact } = user;
                     if (name && email && password && (password === reEnterPassword) && address && postalcode && contact) {
-
-                        axios.post(`${BACKEND_API}/register`, user)
-                            .then(res => alert("Congratulations  " + user.name + "  Your account has been registered"),
-                                localStorage.setItem('user', JSON.stringify(user))
-                            )
+                        
+                        const auth = getAuth();
+                        createUserWithEmailAndPassword(auth, email, password)
+                            .then((userCredential) => {
+                                
+                                const firebaseUser = userCredential.user;
+                                console.log('Registered with:', firebaseUser.email);
+                                localStorage.setItem('user', JSON.stringify({ email: firebaseUser.email, uid: firebaseUser.uid }));
+                                navigate('/home');
+                            })
+                            .catch((error) => {
+                                console.error('Registration error:', error);
+                            });
                     } else {
-                        alert("check all your inputs");
-
+                        alert("Please check your inputs");
                     }
-
-                })
+                });
         });
-    }
-
-
+    };
 
     return (
-        <div className="Login">
+          <div className="Login">
 
             <div className="login-image">
                 <img src={landing} alt="Login Page" />
@@ -119,7 +119,7 @@ const Register = () => {
             </div>
         </div>
 
-    )
-}
+    );
+};
 
-export default Register
+export default Register;
